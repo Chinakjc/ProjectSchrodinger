@@ -254,10 +254,14 @@ def test5b():
 #test3()
 #test4b(V_fun=lambda x,t: np.power(x, 2), L=20)
 
-err = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_space()
+'''err = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_space()
 Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err)
 Analysis.ConvergenceAnalyzer.exponential_convergence_visualizer(error_list=err)
 
 err2 = Analysis.ExactErrorAnalyzer.exact_errors_for_space()
 Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err2)
-Analysis.ConvergenceAnalyzer.full_precision_convergence_visualizer(exact_error_list=err2)
+Analysis.ConvergenceAnalyzer.full_precision_convergence_visualizer(exact_error_list=err2)'''
+
+err3 = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_time(V_func=lambda x,t : np.power(x,2))
+Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err3,label="Nt")
+Analysis.ConvergenceAnalyzer.exponential_convergence_visualizer(error_list=err3,label="Nt")

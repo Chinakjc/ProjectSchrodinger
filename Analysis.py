@@ -142,6 +142,25 @@ class ExactErrorAnalyzer:
         res = ExactErrorList(np.array(errors), Nxs)
         return res
 
+    @classmethod
+    def exact_errors_for_time(cls, psi0_func=lambda x: np.sin(x), V_func=lambda x, t: 0,
+                               psi_exact_fun=lambda t, x: np.exp(-1j / 2.0 * t) * np.sin(x),
+                               T=1, L=6 * np.pi,
+                               Nx=2**12, N0=30, n_iteration=8):
+        errors = list()
+        Nts = [N0 * 2 ** i for i in range(n_iteration)]
+        x = np.linspace(-L / 2.0, L / 2.0, Nx)[:-1]
+        for Nt in Nts:
+            t = np.linspace(0, T, Nt)
+            psi_exact = ExactErrorAnalyzer.exact_value(exact_func=psi_exact_fun, t=t, x=x)
+            print("Nt = ", Nt)
+            psi_h = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt)
+            error = ExactErrorAnalyzer.distance(u=psi_exact, v=psi_h, Nt=Nt, Nx=Nx)
+            errors.append(error)
+
+        res = ExactErrorList(np.array(errors), Nts)
+        return res
+
 
 class EstimatedErrorAnalyzer:
 
@@ -173,4 +192,34 @@ class EstimatedErrorAnalyzer:
             x_1 = x_2
 
         res = EstimatedErrorList(np.array(errors), Nxs, unit_error)
+        return res
+
+    @classmethod
+    def estimated_errors_for_time(cls, psi0_func=lambda x: np.exp(-x ** 2), V_func=lambda x, t: 0,
+                                   T=1, L=10,
+                                   Nx=2**12, N0=30, n_iteration=8,
+                                   unit_error=1 / 2 ** 10):
+        Nts = [N0 * 2 ** i for i in range(n_iteration)]
+        errors = list()
+        error = unit_error
+        errors.append(error)
+        Nt_1 = Nts[0]
+        print("Nt = ", Nt_1)
+        psi_1 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_1)
+        t_1 = np.linspace(-L / 2.0, L / 2.0, Nt_1)
+        for Nt_2 in Nts[1:]:
+            print("Nt = ", Nt_2)
+            t_2 = np.linspace(-L / 2.0, L / 2.0, Nt_2)
+            psi_2 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_2)
+            d_psi = psi_2 - [np.interp(t_2, t_1, psi_1[xi, :]) for xi in range(Nx-1)]
+            k = np.log2(np.linalg.norm([np.linalg.norm(d_psi[:, t], 2) for t in range(Nt_2)], np.inf) / np.sqrt(Nx))
+            print("k_p = ", k)
+            c = error / (Nt_1 ** k)
+            error = (Nt_2 ** k) * c
+            errors.append(error)
+            psi_1 = psi_2
+            Nt_1 = Nt_2
+            t_1 = t_2
+
+        res = EstimatedErrorList(np.array(errors), Nts, unit_error)
         return res
