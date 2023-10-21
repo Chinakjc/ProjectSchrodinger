@@ -44,7 +44,6 @@ def dynamics(psi0_fun=(lambda x: np.exp(-x ** 2)), V_fun=(lambda x, t: 0), L=10,
     for ti in t[1:]:
         Vi = np.exp(-1j*dt*np.array([V_fun(x=xi,t=ti) for xi in x]))
         psi_new = np.fft.ifft(D*np.fft.fft(Vi *res[-1]))
-        #psi_new = Vi * np.fft.ifft(D * np.fft.fft(res[-1]))
         res.append(psi_new)
 
     return np.transpose(res)
