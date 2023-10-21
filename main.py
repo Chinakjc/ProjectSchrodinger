@@ -1,10 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
-import scipy.linalg as sc
 import Schema
 import time
-
+import Analysis
 
 
 
@@ -252,5 +251,9 @@ def test5b():
 
 
 # test2()
-test3()
+#test3()
 #test4b(V_fun=lambda x,t: np.power(x, 2), L=20)
+
+err = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_space()
+Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err)
+Analysis.ConvergenceAnalyzer.exponential_convergence_visualizer(error_list=err)

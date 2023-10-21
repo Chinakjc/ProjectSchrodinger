@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
-import scipy
 
 
 # Simulates the SchrÃ¶dinger dynamics iâˆ‚t = -1/2 Ïˆ'' + V(x,t) Ïˆ, with the pseudospectral method
@@ -9,28 +8,6 @@ import scipy
 # The simulation proceeds from 0 to T, with Nt time steps.
 # Initial condition is given by the function psi0_fun(x), potential by the function V_fun(x,t)
 # Returns an array psi[ix, it]
-def dynamics_lent(psi0_fun=(lambda x: np.exp(-x ** 2)), V_fun=(lambda x, t: 0), L=10, Nx=1000, T=4, Nt=1000):
-    # TO DO
-    x = np.linspace(-L / 2.0, L / 2.0, Nx)
-    t = np.linspace(0, T, Nt)
-    k_values = np.fft.fftfreq(Nx) * Nx
-    kinetic = 0.5 * k_values ** 2 * np.pi ** 2
-    F = scipy.linalg.dft(Nx)
-    IF = np.conj(F) / Nx
-    K = np.dot(IF, np.dot(np.diag(kinetic), F))
-    dt = t[1] - t[0]
-    M = scipy.linalg.expm(-1j * K * dt)
-    res = [psi0_fun(x)]
-    '''for _ in t[1:]:
-        psi_new = np.dot(M, res[-1])
-        res.append(psi_new)'''
-    for ti in t[1:]:
-        Vi = np.diag(np.exp(-1j*dt*np.array([V_fun(x=xi,t=ti) for xi in x])))
-        psi_new = np.dot(np.dot(M,Vi),res[-1])
-        res.append(psi_new)
-
-    return np.transpose(res)
-
 def dynamics(psi0_fun=(lambda x: np.exp(-x ** 2)), V_fun=(lambda x, t: 0), L=10, Nx=1000, T=4, Nt=1000):
     # TO DO
     x = np.linspace(-L / 2.0, L / 2.0, Nx)[:-1]
@@ -48,25 +25,7 @@ def dynamics(psi0_fun=(lambda x: np.exp(-x ** 2)), V_fun=(lambda x, t: 0), L=10,
 
     return np.transpose(res)
 
-'''def dynamics(psi0_fun=(lambda x: np.exp(-x ** 2)), V_fun=(lambda x, t: 0), L=10, Nx=1000, T=4, Nt=1000):
-    # TO DO
-    x = np.linspace(-L / 2.0, L / 2.0, Nx)
-    t = np.linspace(0, T, Nt)
-    k_values = np.fft.fftfreq(Nx) * Nx
-    kinetic = 0.5 * k_values ** 2 * np.pi ** 2
-    F = scipy.linalg.dft(Nx)
-    IF = np.conj(F) / Nx
-    K = np.dot(IF, np.dot(np.diag(kinetic), F))
-    #dt = t[1] - t[0]
-    res = [psi0_fun(x)]
-    for ti in t[1:]:
-        Vi = np.diag(np.array([V_fun(x=xi,t=ti) for xi in x]))
-        U = K + Vi
-        M = scipy.linalg.expm(-1j * U * ti)
-        psi_new = np.dot(M,res[0])
-        res.append(psi_new)
 
-    return np.transpose(res)'''
 
 # Plots the return value psi of the function "dynamics", using linear interpolation
 # The whole of psi is plotted, in an animation lasting "duration" seconds (duration is unconnected to T)
