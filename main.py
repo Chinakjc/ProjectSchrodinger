@@ -257,3 +257,7 @@ def test5b():
 err = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_space()
 Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err)
 Analysis.ConvergenceAnalyzer.exponential_convergence_visualizer(error_list=err)
+
+err2 = Analysis.ExactErrorAnalyzer.exact_errors_for_space()
+Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err2)
+Analysis.ConvergenceAnalyzer.full_precision_convergence_visualizer(exact_error_list=err2)
