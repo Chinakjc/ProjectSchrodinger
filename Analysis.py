@@ -171,13 +171,78 @@ class EstimatedErrorAnalyzer:
                                    unit_error=1 / 2 ** 10):
         Nxs = [N0 * 2 ** i for i in range(n_iteration)]
         errors = list()
-        error = unit_error
-        errors.append(error)
+        error1 = unit_error
+        errors.append(error1)
+
         Nx_1 = Nxs[0]
         print("Nx = ", Nx_1)
         psi_1 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx_1, Nt=Nt)
         x_1 = np.linspace(-L / 2.0, L / 2.0, Nx_1)[:-1]
-        for Nx_2 in Nxs[1:]:
+
+
+        Nx_2 = Nxs[1]
+        print("Nx = ", Nx_2)
+        psi_2 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx_2, Nt=Nt)
+        x_2 = np.linspace(-L / 2.0, L / 2.0, Nx_2)[:-1]
+
+        Nx_3 = Nxs[2]
+        print("Nx = ", Nx_3)
+        psi_3 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx_3, Nt=Nt)
+        x_3 = np.linspace(-L / 2.0, L / 2.0, Nx_3)[:-1]
+
+
+        d1 = ExactErrorAnalyzer.distance(psi_2, np.transpose([np.interp(x_2, x_1, psi_1[:, ti]) for ti in range(Nt)]), Nt=Nt,
+                                         Nx=Nx_2-1)
+        d2 = ExactErrorAnalyzer.distance(psi_3, np.transpose([np.interp(x_3, x_2, psi_2[:, ti]) for ti in range(Nt)]), Nt=Nt,
+                                         Nx=Nx_3-1)
+
+        k = (np.log2(d2 / d1)) / (np.log2(Nx_2 / Nx_1))
+        print("k_p = ", k)
+        c1 = error1 / (Nx_1 ** k)
+        error2 = (Nx_2 ** k) * c1
+        c2 = error2 / (Nx_2 ** k)
+        error3 = (Nx_3 ** k) * c2
+        errors.append(error2)
+        errors.append(error3)
+        psi_1 = psi_2
+        psi_2 = psi_3
+        Nx_1 = Nx_2
+        Nx_2 = Nx_3
+        error1 = error2
+        error2 = error3
+        x_1 = x_2
+        x_2 = x_3
+
+        for Nx_3 in Nxs[3:]:
+            print("Nx = ", Nx_3)
+            x_3 = np.linspace(-L / 2.0, L / 2.0, Nx_3)[:-1]
+
+
+            psi_3 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx_3, Nt=Nt)
+            d1 = ExactErrorAnalyzer.distance(psi_2,
+                                             np.transpose([np.interp(x_2, x_1, psi_1[:, ti]) for ti in range(Nt)]),
+                                             Nt=Nt,
+                                             Nx=Nx_2-1)
+            d2 = ExactErrorAnalyzer.distance(psi_3,
+                                             np.transpose([np.interp(x_3, x_2, psi_2[:, ti]) for ti in range(Nt)]),
+                                             Nt=Nt,
+                                             Nx=Nx_3-1)
+            k = (np.log2(d2 / d1)) / (np.log2(Nx_2 / Nx_1))
+            print("k_p = ", k)
+            c1 = error1 / (Nx_1 ** k)
+            error2 = (Nx_2 ** k) * c1
+            c2 = error2 / (Nx_2 ** k)
+            error3 = (Nx_3 ** k) * c2
+            errors.append(error2)
+            psi_1 = psi_2
+            psi_2 = psi_3
+            Nt_1 = Nx_2
+            Nt_2 = Nx_3
+            error1 = error2
+            error2 = error3
+            x_1 = x_2
+            x_2 = x_3
+        '''for Nx_2 in Nxs[1:]:
             print("Nx = ", Nx_2)
             x_2 = np.linspace(-L / 2.0, L / 2.0, Nx_2)[:-1]
             psi_2 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx_2, Nt=Nt)
@@ -189,7 +254,7 @@ class EstimatedErrorAnalyzer:
             errors.append(error)
             psi_1 = psi_2
             Nx_1 = Nx_2
-            x_1 = x_2
+            x_1 = x_2'''
 
         res = EstimatedErrorList(np.array(errors), Nxs, unit_error)
         return res
@@ -201,25 +266,78 @@ class EstimatedErrorAnalyzer:
                                    unit_error=1 / 2 ** 10):
         Nts = [N0 * 2 ** i for i in range(n_iteration)]
         errors = list()
-        error = unit_error
-        errors.append(error)
+        error1 = unit_error
+        errors.append(error1)
         Nt_1 = Nts[0]
         print("Nt = ", Nt_1)
         psi_1 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_1)
         t_1 = np.linspace(-L / 2.0, L / 2.0, Nt_1)
-        for Nt_2 in Nts[1:]:
+        Nt_2 = Nts[1]
+        print("Nt = ", Nt_2)
+        psi_2 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_2)
+        t_2 = np.linspace(-L / 2.0, L / 2.0, Nt_2)
+        Nt_3 = Nts[2]
+        print("Nt = ", Nt_3)
+        psi_3 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_3)
+        t_3 = np.linspace(-L / 2.0, L / 2.0, Nt_3)
+
+        d1 = ExactErrorAnalyzer.distance(psi_2,[np.interp(t_2, t_1, psi_1[xi, :]) for xi in range(Nx-1)],Nt=Nt_2,Nx=Nx-1)
+        d2 = ExactErrorAnalyzer.distance(psi_3,[np.interp(t_3, t_2, psi_2[xi, :]) for xi in range(Nx-1)],Nt=Nt_3,Nx=Nx-1)
+
+        k = (np.log2(d2/d1)) / (np.log2(Nt_2/Nt_1))
+        print("k_p = ", k)
+        c1 = error1 / (Nt_1 ** k)
+        error2 = (Nt_2 ** k) * c1
+        c2 = error2 / (Nt_2 ** k)
+        error3 = (Nt_3 ** k) * c2
+        errors.append(error2)
+        errors.append(error3)
+        psi_1 = psi_2
+        psi_2 = psi_3
+        Nt_1 = Nt_2
+        Nt_2 = Nt_3
+        error1 = error2
+        error2 = error3
+        t_1 = t_2
+        t_2 = t_3
+
+        for Nt_3 in Nts[3:]:
+            print("Nt = ", Nt_3)
+            t_3 = np.linspace(-L / 2.0, L / 2.0, Nt_3)
+
+            psi_3 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_3)
+            print(len(t_2))
+            d1 = ExactErrorAnalyzer.distance(psi_2, [np.interp(t_2, t_1, psi_1[xi, :]) for xi in range(Nx - 1)],Nt=Nt_2,Nx=Nx-1)
+            d2 = ExactErrorAnalyzer.distance(psi_3, [np.interp(t_3, t_2, psi_2[xi, :]) for xi in range(Nx - 1)],Nt=Nt_3,Nx=Nx-1)
+            k = (np.log2(d2 / d1)) / (np.log2(Nt_2 / Nt_1))
+            print("k_p = ", k)
+            c1 = error1 / (Nt_1 ** k)
+            error2 = (Nt_2 ** k) * c1
+            c2 = error2 / (Nt_2 ** k)
+            error3 = (Nt_3 ** k) * c2
+            errors.append(error2)
+            psi_1 = psi_2
+            psi_2 = psi_3
+            Nt_1 = Nt_2
+            Nt_2 = Nt_3
+            error1 = error2
+            error2 = error3
+            t_1 = t_2
+            t_2 = t_3
+
+        '''for Nt_2 in Nts[1:]:
             print("Nt = ", Nt_2)
             t_2 = np.linspace(-L / 2.0, L / 2.0, Nt_2)
             psi_2 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_2)
             d_psi = psi_2 - [np.interp(t_2, t_1, psi_1[xi, :]) for xi in range(Nx-1)]
-            k = np.log2(np.linalg.norm([np.linalg.norm(d_psi[:, t], 2) for t in range(Nt_2)], np.inf) / np.sqrt(Nx))
+            k = np.log2(np.linalg.norm([np.linalg.norm(d_psi[:, t], 2) for t in range(Nt_2)], np.inf) / np.sqrt(Nx)) / np.log2(Nt_2/Nt_1)
             print("k_p = ", k)
             c = error / (Nt_1 ** k)
             error = (Nt_2 ** k) * c
             errors.append(error)
             psi_1 = psi_2
             Nt_1 = Nt_2
-            t_1 = t_2
+            t_1 = t_2'''
 
         res = EstimatedErrorList(np.array(errors), Nts, unit_error)
         return res

@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
+from scipy.optimize import fsolve
+
 import Schema
 import time
 import Analysis
@@ -262,6 +264,79 @@ err2 = Analysis.ExactErrorAnalyzer.exact_errors_for_space()
 Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err2)
 Analysis.ConvergenceAnalyzer.full_precision_convergence_visualizer(exact_error_list=err2)'''
 
-err3 = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_time(V_func=lambda x,t : np.power(x,2))
+err3 = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_space(psi0_func=lambda x: np.sin(np.sin(np.pi*x)))#time(V_func=lambda x,t : np.power(x,2),N0=15,n_iteration= 7)
 Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err3,label="Nt")
 Analysis.ConvergenceAnalyzer.exponential_convergence_visualizer(error_list=err3,label="Nt")
+
+'''Nxs = np.array([2 ** i for i in range(10,20)])
+kk = -2.0
+bk = -10
+ck = 100
+
+error1 = 1/512
+errors = [error1]
+def f(x):
+    return np.exp2(bk)*np.power(x,kk) + ck
+
+def equations(p, x1, y1, x2, y2, x3, y3):
+    b, k, c = p
+    return (2**b * x1**k + c - y1, 2**b * x2**k + c - y2, 2**b * x3**k + c - y3)
+
+def solve_bkc(x1, y1, x2, y2, x3, y3):
+    # 初始猜测值
+    b0, k0, c0 = 1.0, -1.0, 1.0
+    b, k, c = fsolve(equations, (b0, k0, c0), args=(x1, y1, x2, y2, x3, y3))
+    return b, k, c
+
+Nx_1 = Nxs[0]
+Nx_2 = Nxs[1]
+print("Nx = ", Nx_1)
+psi_1 = f(Nx_1)
+print("Nx = ", Nx_2)
+psi_2 = f(Nx_2)
+Nx_3 = Nxs[2]
+print("Nx = ",Nx_3)
+psi_3 = f(Nx_3)
+d1 = psi_2 - psi_1
+d2 = psi_3 - psi_2
+k = (np.log2(d2/d1)) / (np.log2(Nx_2/Nx_1))
+print("k_p = ", k)
+c1 = error1 / (Nx_1 ** k)
+error2 = (Nx_2 ** k) * c1
+c2 = error2 / (Nx_2 ** k)
+error3 = (Nx_3 ** k) * c2
+errors.append(error2)
+errors.append(error3)
+psi_1 = psi_2
+psi_2 = psi_3
+Nx_1 = Nx_2
+Nx_2 = Nx_3
+error1 = error2
+error2 = error3
+
+for Nx_3 in Nxs[3:]:
+    print("Nx = ", Nx_3)
+    psi_3 = f(Nx_3)
+    d1 = psi_2 - psi_1
+    d2 = psi_3 - psi_2
+    k = (np.log2(d2/d1)) / (np.log2(Nx_2/Nx_1))
+    print("k_p = ", k)
+    c1 = error1 / (Nx_1 ** k)
+    error2 = (Nx_2 ** k) * c1
+    c2 = error2 / (Nx_2 ** k)
+    error3 = (Nx_3 ** k) * c2
+    errors.append(error2)
+    #errors.append(error3)
+    psi_1 = psi_2
+    psi_2 = psi_3
+    Nx_1 = Nx_2
+    Nx_2 = Nx_3
+    error1 = error2
+    error2 = error3
+
+res = Analysis.EstimatedErrorList(np.array(errors), Nxs, 1/512)
+
+print(errors)
+
+Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(res)
+'''
