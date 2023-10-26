@@ -7,7 +7,7 @@ import Analysis
 
 
 def test_of_solution_and_animation(psi0=(lambda x: np.exp(-x ** 2)), v_fun=(lambda x, t: 0), L=10, T=10, Nx=2 ** 10,
-                                   Nt=1200, fps=60, label="animation_test_1"):
+                                   Nt=600, fps=60, label="animation_test_1"):
     '''
         test pour le schema en résolvant des équations de Schrödinger de différents psi0 et v_fun
         la sauvegarde de l'animation en format mp4 demande ffmpeg,
@@ -30,6 +30,8 @@ def test_of_solution_and_animation(psi0=(lambda x: np.exp(-x ** 2)), v_fun=(lamb
     writer = FFMpegWriter(fps=fps)
 
     file_name = label + ".mp4"
+
+    print("Sauvgarde en cours.")
     anim.save(file_name, writer=writer, dpi=300)
     print("Sauvgarde réussi.")
 
@@ -38,12 +40,16 @@ def test_of_solution_and_animation(psi0=(lambda x: np.exp(-x ** 2)), v_fun=(lamb
 
 
 def test_for_verification_by_comparing_the_animation_with_the_exact_solution():
-    T = 10
+    """
+    test pour la vérification en comparant l'animation avec la solution exacte
+    :return:
+    """
+    T = 5
     L = 6 * np.pi
     fps = 60
     Nx = 2 ** 10
     Nt = fps * T
-    psi0 = lambda x: np.cos(2 * np.pi * x)
+    psi0 = lambda x: np.sin(x)
     psi_e = lambda t, x: np.exp(-1j / 2.0 * t) * np.sin(x)
     vf = lambda x, t: 0
     x = np.linspace(-L / 2.0, L / 2.0, Nx)[:-1]
@@ -60,12 +66,13 @@ def test_for_verification_by_comparing_the_animation_with_the_exact_solution():
                            frames_per_second=fps,
                            L=L)
 
-    anim_h = anim = Schema.plot_psi(psi=psi_h, duration=T,
+    anim_h = Schema.plot_psi(psi=psi_h, duration=T,
                                     frames_per_second=fps,
                                     L=L)
 
     print("Animation générée.")
     writer = FFMpegWriter(fps=fps)
+    print("Sauvgarde en cours.")
     anim.save("exact_solution.mp4", writer=writer, dpi=300)
     anim_h.save("approximate_solution.mp4", writer=writer, dpi=300)
     print("Sauvgarde réussi.")
@@ -136,37 +143,45 @@ def test_of_time_complexity(n_test=100):
 
 
 def test_of_convergence_for_space_with_exact_solution():
+    """
+    test pour la convergence en espace
+    :return:
+    """
     T = 10
     L = 6 * np.pi
-    psi0_func = lambda x: np.cos(2 * np.pi * x)
+    psi0_func = lambda x: np.sin(x)
     psi_e_func = lambda t, x: np.exp(-1j / 2.0 * t) * np.sin(x)
     v_func = lambda x, t: 0
 
     print("test of exact convergence for space begins !")
 
     print("Calculation des erreurs.")
-    errs = Analysis.ExactErrorAnalyzer.convergence_for_space(psi0_func=psi0_func, psi_e_func=psi_e_func, v_func=v_func,
+    errs = Analysis.ExactErrorAnalyzer.exact_errors_for_space(psi0_func=psi0_func,psi_exact_fun= psi_e_func,V_func =v_func,
                                                              L=L, T=T)
     print("Calculation terminée.")
 
     print("Génération de la figure.")
-    Analysis.ConvergenceAnalyzer.full_precision_convergence_visualizer(errs=errs)
+    Analysis.ConvergenceAnalyzer.full_precision_convergence_visualizer(exact_error_list=errs)
     print("Figure générée.")
 
     print("end of test !")
 
 
 def test_of_convergence_for_time_with_exact_solution():
+    """
+    test pour la convergence en temps
+    :return:
+    """
     T = 10
     L = 6 * np.pi
-    psi0_func = lambda x: np.cos(2 * np.pi * x)
+    psi0_func = lambda x: np.sin(x)
     psi_e_func = lambda t, x: np.exp(-1j / 2.0 * t) * np.sin(x)
     v_func = lambda x, t: 0
 
     print("test of exact convergence for time begins !")
 
     print("Calculation des erreurs.")
-    errs = Analysis.ExactErrorAnalyzer.convergence_for_time(psi0_func=psi0_func, psi_e_func=psi_e_func, v_func=v_func,
+    errs = Analysis.ExactErrorAnalyzer.exact_errors_for_time(psi0_func=psi0_func, psi_exact_fun=psi_e_func, V_func=v_func,
                                                             L=L, T=T)
     print("Calculation terminée.")
 
@@ -179,6 +194,15 @@ def test_of_convergence_for_time_with_exact_solution():
 
 def test_of_convergence_for_space_without_exact_solution(psi0_func=lambda x: np.exp(-x ** 2), V_func=lambda x, t: 0,
                                                          T=2, L=10, Nt=120):
+    """
+    test pour la convergence en espace
+    :param psi0_func:
+    :param V_func:
+    :param T:
+    :param L:
+    :param Nt:
+    :return:
+    """
     print("test of approximate convergence for space begins !")
 
     print("Calculation des erreurs approximatives.")
@@ -198,6 +222,15 @@ def test_of_convergence_for_space_without_exact_solution(psi0_func=lambda x: np.
 
 def test_of_convergence_for_time_without_exact_solution(psi0_func=lambda x: np.exp(-x ** 2),
                                                         V_func=lambda x, t: np.power(x, 2), T=1, L=10, Nx=2 ** 8):
+    """
+    test pour la convergence en temps
+    :param psi0_func:
+    :param V_func:
+    :param T:
+    :param L:
+    :param Nx:
+    :return:
+    """
     print("test of approximate convergence for time begins !")
 
     print("Calculation des erreurs approximatives.")
