@@ -110,7 +110,9 @@ class ConvergenceAnalyzer:
         c_e = -2 ** b_e
 
         y = np.exp2(c_e * np.power(Ns, k_e))
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(8,6))
+        #ax.set_xlim(Ns[0], Ns[-1])
+        #ax.set_ylim(np.min(errors), np.max(errors))
         ax.set_xscale("log", base=2)
         ax.set_yscale("functionlog", base=2, functions=(lambda x: np.log2(-np.log2(x)), lambda x: np.exp2(-np.exp2(x))))
         ax.set_xlabel(f"log2 of {label}", fontsize=15)
@@ -181,11 +183,12 @@ class EstimatedErrorAnalyzer:
     @classmethod
     def estimated_errors_for_space(cls, psi0_func=lambda x: np.exp(-x ** 2), V_func=lambda x, t: 0,
                                    T=2, L=10,
-                                   Nt=120, N0=2 ** 10, n_iteration=10,
-                                   unit_error=1 / 2 ** 10):
+                                   Nt=120, N0=2 ** 2, n_iteration=12,
+                                   unit_error= np.exp2(-20)):
         """ This method is used to compute the estimated errors for different space steps. """
         # The Nx must be a power of 2 for simplifying the reconstruction of the estimated error.
-        Nxs = [N0 * 2 ** i for i in range(n_iteration)]
+
+        Nxs = [N0 * 2 ** i for i in range(n_iteration )]
         errors = list()
         # The real error is unknown, so we use the unit error as the first error.
         # i.e. the real error1 = O(unit_error)
@@ -250,11 +253,11 @@ class EstimatedErrorAnalyzer:
             # i.e. error = c_p * x^k_p for each interval [N_p, N_{p+1}].
             k = (np.log2(d2 / d1)) / (np.log2(Nx_2 / Nx_1))
             print("k_p = ", k)
-            c1 = error1 / (Nx_1 ** k)
-            error2 = (Nx_2 ** k) * c1
+            #c1 = error1 / (Nx_1 ** k)
+            #error2 = (Nx_2 ** k) * c1
             c2 = error2 / (Nx_2 ** k)
             error3 = (Nx_3 ** k) * c2
-            errors.append(error2)
+            errors.append(error3)
             psi_1 = psi_2
             psi_2 = psi_3
             Nt_1 = Nx_2
@@ -270,8 +273,8 @@ class EstimatedErrorAnalyzer:
     @classmethod
     def estimated_errors_for_time(cls, psi0_func=lambda x: np.exp(-x ** 2), V_func=lambda x, t: 0,
                                    T=1, L=10,
-                                   Nx=2**12, N0=30, n_iteration=8,
-                                   unit_error=1 / 2 ** 10):
+                                   Nx=2**8, N0=15, n_iteration=8,
+                                   unit_error= np.exp2(-10)):
         """ This method is used to compute the estimated errors for different time steps. """
         # The Nt must be a power of 2 for simplifying the reconstruction of the estimated error.
         Nts = [N0 * 2 ** i for i in range(n_iteration)]
@@ -280,6 +283,7 @@ class EstimatedErrorAnalyzer:
         # i.e. the real error1 = O(unit_error)
         error1 = unit_error
         errors.append(error1)
+
         Nt_1 = Nts[0]
         print("Nt = ", Nt_1)
         psi_1 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_1)
@@ -326,11 +330,11 @@ class EstimatedErrorAnalyzer:
             # i.e. error = c_p * x^k_p for each interval [N_p, N_{p+1}].
             k = (np.log2(d2 / d1)) / (np.log2(Nt_2 / Nt_1))
             print("k_p = ", k)
-            c1 = error1 / (Nt_1 ** k)
-            error2 = (Nt_2 ** k) * c1
+            #c1 = error1 / (Nt_1 ** k)
+            #error2 = (Nt_2 ** k) * c1
             c2 = error2 / (Nt_2 ** k)
             error3 = (Nt_3 ** k) * c2
-            errors.append(error2)
+            errors.append(error3)
             psi_1 = psi_2
             psi_2 = psi_3
             Nt_1 = Nt_2

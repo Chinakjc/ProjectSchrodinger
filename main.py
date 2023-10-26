@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
-from scipy.optimize import fsolve
-
 import Schema
 import time
 import Analysis
@@ -257,21 +255,22 @@ def test5b():
 #test4b(V_fun=lambda x,t: np.power(x, 2), L=20)
 
 '''err = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_space()
-Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err)
-Analysis.ConvergenceAnalyzer.exponential_convergence_visualizer(error_list=err)
+#Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err)
+Analysis.ConvergenceAnalyzer.exponential_convergence_visualizer(error_list=err)'''
 
-err2 = Analysis.ExactErrorAnalyzer.exact_errors_for_space()
+'''err2 = Analysis.ExactErrorAnalyzer.exact_errors_for_space()
 Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err2)
 Analysis.ConvergenceAnalyzer.full_precision_convergence_visualizer(exact_error_list=err2)'''
 
-err3 = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_space(psi0_func=lambda x: np.sin(np.sin(np.pi*x)))#time(V_func=lambda x,t : np.power(x,2),N0=15,n_iteration= 7)
+err3 = Analysis.EstimatedErrorAnalyzer.estimated_errors_for_time(V_func=lambda x,t :np.power(x,2))
 Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(error_list=err3,label="Nt")
 Analysis.ConvergenceAnalyzer.exponential_convergence_visualizer(error_list=err3,label="Nt")
+
 
 '''Nxs = np.array([2 ** i for i in range(10,20)])
 kk = -2.0
 bk = -10
-ck = 100
+ck = 12
 
 error1 = 1/512
 errors = [error1]
@@ -317,15 +316,19 @@ error2 = error3
 for Nx_3 in Nxs[3:]:
     print("Nx = ", Nx_3)
     psi_3 = f(Nx_3)
+    print("psi_3 = ", psi_3)
     d1 = psi_2 - psi_1
     d2 = psi_3 - psi_2
+    print("d1 = ", d1)
+    print("d2 = ", d2)
+    print("d2/d1 = ", d2/d1)
     k = (np.log2(d2/d1)) / (np.log2(Nx_2/Nx_1))
     print("k_p = ", k)
-    c1 = error1 / (Nx_1 ** k)
-    error2 = (Nx_2 ** k) * c1
+    #c1 = error1 / (Nx_1 ** k)
+    #error2 = (Nx_2 ** k) * c1
     c2 = error2 / (Nx_2 ** k)
     error3 = (Nx_3 ** k) * c2
-    errors.append(error2)
+    errors.append(error3)
     #errors.append(error3)
     psi_1 = psi_2
     psi_2 = psi_3
@@ -338,5 +341,15 @@ res = Analysis.EstimatedErrorList(np.array(errors), Nxs, 1/512)
 
 print(errors)
 
-Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(res)
-'''
+Analysis.ConvergenceAnalyzer.polynomial_convergence_visualizer(res)'''
+'''x = np.linspace(2, 4, 100)
+y = np.exp2(-np.power(x,2))
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.set_yscale("functionlog", base=2, functions=(lambda x: np.log2(-np.log2(x)), lambda x: np.exp2(-np.exp2(x))))
+ax.set_xscale("functionlog", base=2, functions=(lambda x: np.log2(x), lambda x: np.exp2(x)))
+ax.plot(x, y, linestyle='--', color='green')
+plt.show()
+fig, ax2 = plt.subplots(figsize=(8, 6))
+ax2.plot(x,2*x)
+plt.show()'''
+
