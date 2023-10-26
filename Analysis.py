@@ -5,6 +5,7 @@ import Schema
 
 
 class ErrorList:
+    """ This class is used to store the errors and the space data of the error. """
 
     def __init__(self, errors_data: np.array, space_data):
         self.errors_data = errors_data
@@ -21,6 +22,7 @@ class ErrorList:
 
 
 class ExactErrorList(ErrorList):
+    """ This class is used to store the exact errors and the space data of the error."""
 
     def __init__(self, errors_data: np.array, space_data):
         super().__init__(errors_data, space_data)
@@ -30,6 +32,7 @@ class ExactErrorList(ErrorList):
 
 
 class EstimatedErrorList(ErrorList):
+    """ This class is used to store the estimated errors and the space data of the error."""
 
     def __init__(self, errors_data: np.array, space_data, unit):
         super().__init__(errors_data, space_data)
@@ -40,9 +43,12 @@ class EstimatedErrorList(ErrorList):
 
 
 class ConvergenceAnalyzer:
+    """ This class is used to analyze and visualize the convergence of the error."""
 
     @classmethod
     def polynomial_convergence_visualizer(cls, error_list: ErrorList, label="Nx"):
+        """ This method is used to visualize the polynomial convergence of the error."""
+        # We can see the convergence curve is a straight line in the log-log plot if we have the polynomial convergence.
         errors = error_list.get_errors()
         Ns = error_list.get_space()
         r_e = errors[-1] / errors[-2]
@@ -64,6 +70,7 @@ class ConvergenceAnalyzer:
 
     @classmethod
     def full_precision_convergence_visualizer(cls, exact_error_list: ExactErrorList, label="Nx"):
+        """ This method is used to visualize the full precision convergence of the error."""
         if not isinstance(exact_error_list, ExactErrorList):
             print("This method is only used for exact errors !")
             return
@@ -90,6 +97,9 @@ class ConvergenceAnalyzer:
 
     @classmethod
     def exponential_convergence_visualizer(cls, error_list: ErrorList, label="Nx"):
+        """ This method is used to visualize the exponential convergence of the error."""
+        # We can see the convergence curve is a straight line in the {log*[-log]}-log plot if we have the exponential
+        # convergence.
         errors = error_list.get_errors()
         Ns = error_list.get_space()
         r_e = np.log2(errors[-1]) / np.log2(errors[-2])
@@ -103,7 +113,7 @@ class ConvergenceAnalyzer:
         fig, ax = plt.subplots(figsize=(8, 6))
         ax.set_xscale("log", base=2)
         ax.set_yscale("functionlog", base=2, functions=(lambda x: np.log2(-np.log2(x)), lambda x: np.exp2(-np.exp2(x))))
-        ax.set_xlabel("log2 of Nx", fontsize=15)
+        ax.set_xlabel(f"log2 of {label}", fontsize=15)
         ax.set_ylabel(f"log2 of -log2 of {error_list.get_label()}", fontsize=15)
         ax.scatter(Ns, errors, marker="X", label="Unit of error")
         ax.plot(Ns, y, linestyle='--', color='green', label=f" 2^( - c * x^k ) with c = {-c_e:.3f} and k = {k_e:.3f}")
@@ -116,10 +126,12 @@ class ExactErrorAnalyzer:
 
     @classmethod
     def exact_value(cls, exact_func, t, x):
+        """ This method is used to get the discretized value of the exact solution. """
         return np.array([exact_func(t, xt) for xt in x])
 
     @classmethod
     def distance(cls, u, v, Nt, Nx):
+        """ This method is used to compute the distance between two discretized functions. """
         duv = u - v
         return np.linalg.norm([np.linalg.norm(duv[:, t], 2) for t in range(Nt)], np.inf) / np.sqrt(Nx)
 
@@ -128,6 +140,7 @@ class ExactErrorAnalyzer:
                                psi_exact_fun=lambda t, x: np.exp(-1j / 2.0 * t) * np.sin(x),
                                T=5, L=6 * np.pi,
                                Nt=600, N0=2 ** 3, n_iteration=8):
+        """ This method is used to compute the exact errors for different space steps. """
         errors = list()
         Nxs = [N0 * 2 ** i for i in range(n_iteration)]
         t = np.linspace(0, T, Nt)
@@ -147,6 +160,7 @@ class ExactErrorAnalyzer:
                                psi_exact_fun=lambda t, x: np.exp(-1j / 2.0 * t) * np.sin(x),
                                T=1, L=6 * np.pi,
                                Nx=2**12, N0=30, n_iteration=8):
+        """ This method is used to compute the exact errors for different time steps. """
         errors = list()
         Nts = [N0 * 2 ** i for i in range(n_iteration)]
         x = np.linspace(-L / 2.0, L / 2.0, Nx)[:-1]
@@ -169,8 +183,12 @@ class EstimatedErrorAnalyzer:
                                    T=2, L=10,
                                    Nt=120, N0=2 ** 10, n_iteration=10,
                                    unit_error=1 / 2 ** 10):
+        """ This method is used to compute the estimated errors for different space steps. """
+        # The Nx must be a power of 2 for simplifying the reconstruction of the estimated error.
         Nxs = [N0 * 2 ** i for i in range(n_iteration)]
         errors = list()
+        # The real error is unknown, so we use the unit error as the first error.
+        # i.e. the real error1 = O(unit_error)
         error1 = unit_error
         errors.append(error1)
 
@@ -227,6 +245,9 @@ class EstimatedErrorAnalyzer:
                                              np.transpose([np.interp(x_3, x_2, psi_2[:, ti]) for ti in range(Nt)]),
                                              Nt=Nt,
                                              Nx=Nx_3-1)
+
+            # reconstruction of the estimated error by approximating the error as a local polynomial ordre function.
+            # i.e. error = c_p * x^k_p for each interval [N_p, N_{p+1}].
             k = (np.log2(d2 / d1)) / (np.log2(Nx_2 / Nx_1))
             print("k_p = ", k)
             c1 = error1 / (Nx_1 ** k)
@@ -242,19 +263,6 @@ class EstimatedErrorAnalyzer:
             error2 = error3
             x_1 = x_2
             x_2 = x_3
-        '''for Nx_2 in Nxs[1:]:
-            print("Nx = ", Nx_2)
-            x_2 = np.linspace(-L / 2.0, L / 2.0, Nx_2)[:-1]
-            psi_2 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx_2, Nt=Nt)
-            d_psi = psi_2 - np.transpose([np.interp(x_2, x_1, psi_1[:, ti]) for ti in range(Nt)])
-            k = np.log2(np.linalg.norm([np.linalg.norm(d_psi[:, t], 2) for t in range(Nt)], np.inf) / np.sqrt(Nx_2))
-            print("k_p = ", k)
-            c = error / (Nx_1 ** k)
-            error = (Nx_2 ** k) * c
-            errors.append(error)
-            psi_1 = psi_2
-            Nx_1 = Nx_2
-            x_1 = x_2'''
 
         res = EstimatedErrorList(np.array(errors), Nxs, unit_error)
         return res
@@ -264,8 +272,12 @@ class EstimatedErrorAnalyzer:
                                    T=1, L=10,
                                    Nx=2**12, N0=30, n_iteration=8,
                                    unit_error=1 / 2 ** 10):
+        """ This method is used to compute the estimated errors for different time steps. """
+        # The Nt must be a power of 2 for simplifying the reconstruction of the estimated error.
         Nts = [N0 * 2 ** i for i in range(n_iteration)]
         errors = list()
+        # The real error is unknown, so we use the unit error as the first error.
+        # i.e. the real error1 = O(unit_error)
         error1 = unit_error
         errors.append(error1)
         Nt_1 = Nts[0]
@@ -309,6 +321,9 @@ class EstimatedErrorAnalyzer:
             print(len(t_2))
             d1 = ExactErrorAnalyzer.distance(psi_2, [np.interp(t_2, t_1, psi_1[xi, :]) for xi in range(Nx - 1)],Nt=Nt_2,Nx=Nx-1)
             d2 = ExactErrorAnalyzer.distance(psi_3, [np.interp(t_3, t_2, psi_2[xi, :]) for xi in range(Nx - 1)],Nt=Nt_3,Nx=Nx-1)
+
+            # reconstruction of the estimated error by approximating the error as a local polynomial ordre function.
+            # i.e. error = c_p * x^k_p for each interval [N_p, N_{p+1}].
             k = (np.log2(d2 / d1)) / (np.log2(Nt_2 / Nt_1))
             print("k_p = ", k)
             c1 = error1 / (Nt_1 ** k)
@@ -324,20 +339,6 @@ class EstimatedErrorAnalyzer:
             error2 = error3
             t_1 = t_2
             t_2 = t_3
-
-        '''for Nt_2 in Nts[1:]:
-            print("Nt = ", Nt_2)
-            t_2 = np.linspace(-L / 2.0, L / 2.0, Nt_2)
-            psi_2 = Schema.dynamics(psi0_fun=psi0_func, V_fun=V_func, L=L, T=T, Nx=Nx, Nt=Nt_2)
-            d_psi = psi_2 - [np.interp(t_2, t_1, psi_1[xi, :]) for xi in range(Nx-1)]
-            k = np.log2(np.linalg.norm([np.linalg.norm(d_psi[:, t], 2) for t in range(Nt_2)], np.inf) / np.sqrt(Nx)) / np.log2(Nt_2/Nt_1)
-            print("k_p = ", k)
-            c = error / (Nt_1 ** k)
-            error = (Nt_2 ** k) * c
-            errors.append(error)
-            psi_1 = psi_2
-            Nt_1 = Nt_2
-            t_1 = t_2'''
 
         res = EstimatedErrorList(np.array(errors), Nts, unit_error)
         return res
