@@ -67,8 +67,8 @@ def test_for_verification_by_comparing_the_animation_with_the_exact_solution():
                            L=L)
 
     anim_h = Schema.plot_psi(psi=psi_h, duration=T,
-                                    frames_per_second=fps,
-                                    L=L)
+                             frames_per_second=fps,
+                             L=L)
 
     print("Animation générée.")
     writer = FFMpegWriter(fps=fps)
@@ -156,8 +156,9 @@ def test_of_convergence_for_space_with_exact_solution():
     print("test of exact convergence for space begins !")
 
     print("Calculation des erreurs.")
-    errs = Analysis.ExactErrorAnalyzer.exact_errors_for_space(psi0_func=psi0_func,psi_exact_fun= psi_e_func,V_func =v_func,
-                                                             L=L, T=T)
+    errs = Analysis.ExactErrorAnalyzer.exact_errors_for_space(psi0_func=psi0_func, psi_exact_fun=psi_e_func,
+                                                              V_func=v_func,
+                                                              L=L, T=T)
     print("Calculation terminée.")
 
     print("Génération de la figure.")
@@ -181,8 +182,9 @@ def test_of_convergence_for_time_with_exact_solution():
     print("test of exact convergence for time begins !")
 
     print("Calculation des erreurs.")
-    errs = Analysis.ExactErrorAnalyzer.exact_errors_for_time(psi0_func=psi0_func, psi_exact_fun=psi_e_func, V_func=v_func,
-                                                            L=L, T=T)
+    errs = Analysis.ExactErrorAnalyzer.exact_errors_for_time(psi0_func=psi0_func, psi_exact_fun=psi_e_func,
+                                                             V_func=v_func,
+                                                             L=L, T=T)
     print("Calculation terminée.")
 
     print("Génération de la figure.")
@@ -246,3 +248,17 @@ def test_of_convergence_for_time_without_exact_solution(psi0_func=lambda x: np.e
     print("Figure générée.")
 
     print("end of test !")
+
+def generator_of_Square_wave_continue(Ul, Ur, xl,xr):
+    return lambda x, t: np.where(x <= xl, Ul, 0) + np.where((x > xl) & (x < xr), Ul + (x - xl) * (Ur - Ul) / (xr - xl) , 0) + np.where(x >= xr, Ur, 0)
+
+def generator_of_Square_wave2_continue(Ul,Um, Ur, xl, xml,xmr,xr):
+    return lambda x, t: np.where(x <= xl, Ul, 0) + np.where((x > xl) & (x < xml), Ul + (x - xl) * (Um - Ul) / (xml - xl) , 0) + np.where((x >= xml) & (x <= xmr), Um, 0) + np.where((x > xmr) & (x < xr), Um + (x - xmr) * (Ur - Um) / (xr - xmr) , 0) + np.where(x >= xr, Ur, 0)
+def test_of_wave_packet(velocity=10, centre=0, v_func=lambda x, t: 0, T=1, L=200, Nx=2 ** 14, Nt=300, fps=60,
+                        label="wave_packet"):
+    psi0 = lambda x: np.exp(-(x - centre) ** 2) * np.exp(velocity * x * 1j)
+    #xs = np.linspace(-L / 2.0, L / 2.0, Nx)[:-1]
+    #ys = v_func(xs, 0)
+    #plt.plot(xs, ys)
+    #plt.show()
+    test_of_solution_and_animation(psi0=psi0, v_fun=v_func, L=L, T=T, Nx=Nx, Nt=Nt, fps=fps, label=label)

@@ -60,3 +60,4 @@ def plot_psi(psi, duration=10, frames_per_second=30, L=10):
     ani = animation.FuncAnimation(fig=fig, func=update, frames=duration * frames_per_second,
                                   interval=1000 / frames_per_second)
     return ani
+
